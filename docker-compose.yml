@@ -1,0 +1,28 @@
+services:
+  fastcontext:
+    build:
+      context: .
+      args:
+        # Troque por um commit SHA para reprodutibilidade/auditoria.
+        FASTCONTEXT_REF: ${FASTCONTEXT_REF:-main}
+    image: fastcontext:local
+
+    volumes:
+      # Repo a explorar -> somente-leitura (o FastContext so le: Read/Glob/Grep).
+      - ${REPO_PATH:-./repo}:/workspace:ro
+      # Saida gravavel: trajetorias .jsonl
+      - ./out:/out
+
+    working_dir: /workspace
+
+    environment:
+      # LM Studio (endpoint compativel com OpenAI) rodando no HOST do Docker.
+      BASE_URL: ${BASE_URL:-http://host.docker.internal:1234/v1}
+      API_KEY: ${API_KEY:-lm-studio}
+      # Id EXATO do modelo carregado no LM Studio. Deve suportar tool calling.
+      MODEL: ${MODEL:?defina MODEL no .env (id do modelo carregado no LM Studio)}
+
+    # Resolve host.docker.internal no Docker Engine em Linux/WSL2.
+    # No Docker Desktop (Windows/Mac) ja funciona; aqui nao atrapalha.
+    extra_hosts:
+      - "host.docker.internal:host-gateway"
