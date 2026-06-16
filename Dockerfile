@@ -27,7 +27,9 @@ RUN cd /opt/fastcontext && uv tool install .
 # Wrapper: direciona a trajetória para /out (volume gravável),
 # já que /workspace é montado como somente-leitura.
 COPY entrypoint.sh /usr/local/bin/fc-entrypoint
-RUN chmod +x /usr/local/bin/fc-entrypoint
+# Normaliza CRLF -> LF (caso o arquivo tenha sido salvo no Windows) e torna executavel.
+RUN sed -i 's/\r$//' /usr/local/bin/fc-entrypoint \
+    && chmod +x /usr/local/bin/fc-entrypoint
 
 WORKDIR /workspace
 ENTRYPOINT ["fc-entrypoint"]
